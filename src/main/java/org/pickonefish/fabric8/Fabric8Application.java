@@ -7,6 +7,7 @@ import io.fabric8.kubernetes.api.model.batch.v1.CronJob;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
@@ -19,14 +20,18 @@ public class Fabric8Application {
 
   public static void main(String[] args) {
     SpringApplication.run(Fabric8Application.class, args);
+    Config config = new ConfigBuilder()
+            .withMasterUrl("")
+            .withNamespace("")
+            .withCaCertData("")
+            .withOauthToken("")
+            .build();
 
-//    try (KubernetesClient k8s = new DefaultKubernetesClient()) {
-//      k8s.getConfiguration().getContexts()
-//              .stream()
-//              .map(NamedContext::getName)
-//              .forEach(log::info);
-//    }
-    try (KubernetesClient k8s = new DefaultKubernetesClient(Config.autoConfigure("stg-ec@aks-dev"))) {
+    try (KubernetesClient k8s = new DefaultKubernetesClient(config)) {
+      k8s.pods().list().getItems().forEach(pod -> {
+        log.debug(pod.getMetadata().getName());
+        log.debug(pod.getMetadata().getNamespace());
+      });
       CronJob cronJob = k8s.batch().v1().cronjobs().withName("").get();
 
       ObjectMeta objectMeta = new ObjectMetaBuilder()
