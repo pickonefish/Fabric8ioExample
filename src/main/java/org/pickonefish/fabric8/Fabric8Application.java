@@ -1,55 +1,34 @@
 package org.pickonefish.fabric8;
 
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
-import io.fabric8.kubernetes.api.model.batch.v1.CronJob;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-public class Fabric8Application {
+public class Fabric8Application implements ApplicationRunner {
+
+  private static final String TASK_XXX = "xxx";
+
+  @Autowired
+  private TaskService taskService;
 
   public static void main(String[] args) {
     SpringApplication.run(Fabric8Application.class, args);
-    Config config = new ConfigBuilder()
-            .withMasterUrl("")
-            .withNamespace("")
-            .withCaCertData("")
-            .withOauthToken("")
-            .build();
+  }
 
-    try (KubernetesClient k8s = new DefaultKubernetesClient(config)) {
-      k8s.pods().list().getItems().forEach(pod -> {
-        log.debug(pod.getMetadata().getName());
-        log.debug(pod.getMetadata().getNamespace());
-      });
-      CronJob cronJob = k8s.batch().v1().cronjobs().withName("").get();
+  @Override
+  public void run(ApplicationArguments args) throws Exception {
+    String instanceId = args.getOptionValues("instanceId").get(0);
+    String task = args.getOptionValues("task").get(0);
 
-      ObjectMeta objectMeta = new ObjectMetaBuilder()
-              .withAnnotations(cronJob.getSpec().getJobTemplate().getMetadata().getAnnotations())
-              .withLabels(cronJob.getSpec().getJobTemplate().getMetadata().getLabels())
-              .addNewOwnerReferenceLike(
-                      new OwnerReferenceBuilder()
-                              .withKind("CronJob")
-                              .withName(cronJob.getMetadata().getName())
-                              .withUid(cronJob.getMetadata().getUid())
-                              .build()
-              ).and().build();
-      Job job = new JobBuilder()
-              .withMetadata(objectMeta)
-              .withSpec(cronJob.getSpec().getJobTemplate().getSpec())
-              .build();
-      k8s.batch().v1().jobs().inNamespace(cronJob.getMetadata().getNamespace()).create(job);
+    switch (task) {
+      case TASK_XXX:
+        taskService.demo(task, instanceId);
+        break;
     }
-
   }
 }
