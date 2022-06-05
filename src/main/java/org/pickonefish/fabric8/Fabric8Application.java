@@ -7,6 +7,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.List;
+
 @Slf4j
 @SpringBootApplication
 public class Fabric8Application implements ApplicationRunner {
@@ -22,8 +24,16 @@ public class Fabric8Application implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    String instanceId = args.getOptionValues("instanceId").get(0);
-    String task = args.getOptionValues("task").get(0);
+    String instanceId = "";
+    String task = "";
+    List<String> instanceIds = args.getOptionValues("instanceId");
+    if (!instanceIds.isEmpty()) {
+      instanceId = instanceIds.get(0);
+    }
+    List<String> tasks = args.getOptionValues("task");
+    if (!tasks.isEmpty()) {
+      task = tasks.get(0);
+    }
 
     switch (task) {
       case TASK_XXX:
